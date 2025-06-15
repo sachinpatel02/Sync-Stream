@@ -1,15 +1,24 @@
-    //```DB CONNECTION```
+//```DB CONNECTION```
 const mongoose = require("mongoose");
 
 //```DOTENV to hiding imp info in a file```
 const dotenv = require("dotenv");
 dotenv.config();
 
+
 const connectDB = async function () {
-    const dbLink = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cvsacluster1.qceftbo.mongodb.net/?retryWrites=true&w=majority&appName=cvsaCluster1`
-    mongoose.connect(dbLink).then(function (connection) {
-        console.log("Connected to the database...");
-    }).catch(err => console.log(err))
+    try {
+        const dbLink = process.env.MONGO_URI;
+        const conn = await mongoose.connect(dbLink);
+        console.log(`Connected to database...: ${conn.connection.host}`);
+        console.log(`Connected to database...: ${conn.connection.port}`);
+        console.log(`Connected to database...: ${conn.connection.name}`);
+
+    } catch (error) {
+        console.log(`Mongodb connection error: ${error.message}`);
+        process.exit(1);
+
+    }
 }
 
 module.exports = connectDB;
