@@ -1,6 +1,11 @@
 const express = require("express");
+const mongoose = require("mongoose")
+const dotenv = require('dotenv');
+const cookieParser = require('cookie-parser');
+
 const app = express();
 
+app.use(cookieParser());
 app.use(express.json());    //tells express req.body to parse incoming json requests
 
 /****************************************************************************************** */
@@ -13,8 +18,6 @@ connectDB()
 /****************************************************************************************** */
 //-----Making Routes------//
 //1. user routes
-const userRouter = require("./routes/userRoute");
-app.use(userRouter, "/api/user")
 
 
 /****************************************************************************************** */
