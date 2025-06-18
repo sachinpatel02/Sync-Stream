@@ -14,15 +14,15 @@ const { protect, isAdmin } = require("../middlewares/authMiddleware");
 
 //public routes
 router.post('/register', registerUser);
-router.post('login', loginUser);
-router.post('logout', logoutUser);
-router.post('forgot-password', forgotPassword);
-router.put('reset-password/:token', resetPassword);
+router.post('/login', loginUser);
+router.post('/logout', logoutUser);
+router.post('/forgot-password', forgotPassword);
+router.put('/reset-password/:token', resetPassword);
 
 //private routes
 router.get('/profile', protect, getUserProfile);
 router.put('/profile', protect, updateUserProfile);
-router.put('change-password', protect, changePassword);
+router.put('/change-password', protect, changePassword);
 
 //admin-only routes
 router.get('/', protect, isAdmin, getAllUsers);
