@@ -10,14 +10,13 @@ const connectDB = async function () {
     try {
         const dbLink = process.env.MONGO_URI;
         const conn = await mongoose.connect(dbLink);
-        console.log(`Connected to database...: ${conn.connection.host}`);
-        console.log(`Connected to database...: ${conn.connection.port}`);
-        console.log(`Connected to database...: ${conn.connection.name}`);
+        console.log(`Connected to database...[host] : ${conn.connection.host}`);
+        console.log(`Connected to database...[port] : ${conn.connection.port}`);
+        console.log(`Connected to database...[name] : ${conn.connection.name}`);
 
     } catch (error) {
         console.log(`Mongodb connection error: ${error.message}`);
         process.exit(1);
-
     }
 }
 
