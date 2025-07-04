@@ -214,6 +214,7 @@ const updateUserProfile = async (req, res) => {
 const changePassword = async (req, res) => {
     try {
         const { oldPassword, newPassword } = req.body;
+        
         if (!oldPassword || !newPassword) {
             return sendError(res, 400, 'Both old and new passwords are required');
         }

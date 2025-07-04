@@ -1,12 +1,12 @@
 const express = require("express");
-const mongoose = require("mongoose")
-const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const cors = require("cors");
+const http = require("http");
+const {Server} = require("socket.io");
+
 
 const app = express();
 app.use(express.json());    //tells express req.body to parse incoming json requests
-
 app.use(cookieParser());
 
 app.use(cors({
@@ -17,8 +17,19 @@ app.use(cors({
 //-----connecting to a database-----//
 const connectDB = require("./config/db")
 connectDB();
-/****************************************************************************************** */
 
+/****************************************************************************************** */
+//-----Load and use socket handler----//
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: 'http://localhost:3001',
+        credentials: true
+    }
+})
+
+const socketHandler = require('./socket/socketHandler.js');
+socketHandler(io);
 
 /****************************************************************************************** */
 //-----Making Routes------//
@@ -35,11 +46,14 @@ app.use("/api/videos", videoRoutes);
 const sessionRoutes = require("../server/routes/sessionRoutes.js");
 app.use("/api/sessions/", sessionRoutes);
 
+//4. TMDB routes for admin only
+const tmdbRoutes = require("../server/routes/tmdbRoutes.js");
+app.use("/api/tmdb", tmdbRoutes);
 
 /****************************************************************************************** */
 
 //```SERVER LISTENING AT PORT 3000```
 const PORT = process.env.PORT;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Sync Stream backend server started at port: ${PORT} .... `);
 });
