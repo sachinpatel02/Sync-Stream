@@ -12,7 +12,7 @@ const addVideo = async (req, res) => {
         //creating new video object -- we can use Vidoe.create() as well. 
         const video = new Video({ title, description, videoUrl, thumbnail, tags, createdBy: req.user._id });
         const saveVideo = await video.save();
-        return sendSuccess(res, 200, 'Video added successfully', saveVideo);
+        return sendSuccess(res, 201, 'Video added successfully', saveVideo);
     } catch (err) {
         console.log(err);
         return sendError(res, 500, 'Failed to add video');
