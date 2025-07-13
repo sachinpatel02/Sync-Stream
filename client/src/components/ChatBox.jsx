@@ -32,7 +32,7 @@ const ChatBox = ({ roomCode, socket, userName }) => {
     };
 
     return (
-        <div className="bg-gray-800 h-[500px] rounded-xl shadow-md p-4 flex flex-col">
+        <div className="bg-gray-800 h-[600px] rounded-xl shadow-md p-4 flex flex-col">
             <h2 className="text-lg font-semibold mb-2 flex items-center gap-1">
                 💬 Live Chat
             </h2>

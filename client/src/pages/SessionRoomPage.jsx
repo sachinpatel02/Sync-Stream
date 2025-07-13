@@ -63,57 +63,68 @@ const SessionRoomPage = () => {
     fetchSession();
   }, [roomCode]);
 
+  
+
   // ✅ Join room, setup listeners (chat + video sync)
   useEffect(() => {
     if (!roomCode) return;
-
+  
     socket.emit("join-room", roomCode);
-    socket.emit("request-sync", roomCode);
-
+  
+    // Delay the request-sync by 500ms to ensure room join is registered
+    const syncTimeout = setTimeout(() => {
+      socket.emit("request-sync", roomCode);
+    }, 500);
+  
     const handleInitialSync = async ({ time, isPlaying }) => {
+      console.log("[SYNC] Initial sync received", { time, isPlaying });
       if (!playerRef.current) return;
       ignoreRef.current = true;
       const provider = await playerRef.current.getProvider();
       await provider.setCurrentTime(time);
       isPlaying ? playerRef.current.play() : playerRef.current.pause();
     };
-
+  
     const handlePlay = async ({ time }) => {
+      console.log("[SYNC] Play sync received at", time);
       if (!playerRef.current) return;
       ignoreRef.current = true;
       const provider = await playerRef.current.getProvider();
       await provider.setCurrentTime(time);
       await playerRef.current.play();
     };
-
+  
     const handlePause = async ({ time }) => {
+      console.log("[SYNC] Pause sync received at", time);
       if (!playerRef.current) return;
       ignoreRef.current = true;
       const provider = await playerRef.current.getProvider();
       await provider.setCurrentTime(time);
       await playerRef.current.pause();
     };
-
+  
     const handleSeek = async ({ time }) => {
+      console.log("[SYNC] Seek sync received at", time);
       if (!playerRef.current) return;
       ignoreRef.current = true;
       const provider = await playerRef.current.getProvider();
       await provider.setCurrentTime(time);
     };
-
-
+  
     socket.on("initial-sync", handleInitialSync);
     socket.on("sync-play", handlePlay);
     socket.on("sync-pause", handlePause);
     socket.on("sync-seek", handleSeek);
-
+  
     return () => {
+      clearTimeout(syncTimeout);
       socket.off("initial-sync", handleInitialSync);
       socket.off("sync-play", handlePlay);
       socket.off("sync-pause", handlePause);
       socket.off("sync-seek", handleSeek);
     };
   }, [roomCode]);
+  
 
   // ✅ Attach player events for emitting sync
 
@@ -158,6 +169,8 @@ const SessionRoomPage = () => {
       videoEl.removeEventListener("seeked", onSeeked);
     };
   }, [youtubeId, roomCode]);
+
+  
   const [user, setUser] = useState(null);
 
   useEffect(() => {
