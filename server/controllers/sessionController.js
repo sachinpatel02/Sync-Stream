@@ -11,17 +11,18 @@ const generateRandomCode = () => {
 //session creation logic
 const createSession = async (req, res) => {
     try {
-        const { videoId, startTime } = req.body;
+        const { videoId, startTime, roomName } = req.body; // ✅ accept roomName
 
         if (!videoId) {
             return sendError(res, 400, 'Video ID is required');
         }
+
         const video = await Video.findById(videoId);
         if (!video) {
             return sendError(res, 404, 'Selected Video not found');
         }
 
-        //generationg roomCode. until we get a unique roomcode
+        // Generate unique roomCode
         let roomCode = generateRandomCode();
         let duplicate = await Session.findOne({ roomCode });
         while (duplicate) {
@@ -29,12 +30,13 @@ const createSession = async (req, res) => {
             duplicate = await Session.findOne({ roomCode });
         }
 
-        //creating session
+        // Create session
         const session = new Session({
             video: videoId,
             host: req.user._id,
             participants: [req.user._id],
             roomCode,
+            roomName: roomName || '', // ✅ add roomName (optional)
             startTime,
             status: startTime ? 'upcoming' : 'live',
         });
@@ -47,6 +49,7 @@ const createSession = async (req, res) => {
         return sendError(res, 500, 'Failed to create session');
     }
 }
+
 
 //get session by id
 const getSessionById = async (req, res) => {

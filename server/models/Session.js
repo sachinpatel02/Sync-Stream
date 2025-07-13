@@ -14,6 +14,7 @@ const sessionSchema = new mongoose.Schema(
         //room code - unique
         roomCode: { type: String, unique: true, required: true, },
 
+        roomName: String, 
         //status tracks live or past sessions
         status: { type: String, enum: ['upcoming', 'live', 'ended'], },
 
