@@ -20,6 +20,7 @@ const SessionRoomPage = () => {
   const { id: roomCode } = useParams();
   const [session, setSession] = useState(null);
   const [youtubeId, setYoutubeId] = useState("");
+  const [mp4Url, setMp4Url] = useState("");
   const playerRef = useRef(null);
   const ignoreRef = useRef(false);
 
@@ -52,9 +53,14 @@ const SessionRoomPage = () => {
         }
         setSession(data.data);
 
-        const ytId = extractYouTubeId(data.data?.video?.videoUrl);
-        if (ytId) setYoutubeId(ytId);
-        else toast.error("Invalid YouTube URL");
+        const url = data.data?.video?.videoUrl;
+        if (url && url.endsWith(".mp4")) {
+          setMp4Url(url);
+        } else {
+          const ytId = extractYouTubeId(url);
+          if (ytId) setYoutubeId(ytId);
+          else toast.error("Invalid YouTube URL");
+        }
       } catch (err) {
         toast.error("Server error while joining session");
         console.error(err);
@@ -80,35 +86,55 @@ const SessionRoomPage = () => {
       console.log("[SYNC] Initial sync received", { time, isPlaying });
       if (!playerRef.current) return;
       ignoreRef.current = true;
-      const provider = await playerRef.current.getProvider();
-      await provider.setCurrentTime(time);
-      isPlaying ? playerRef.current.play() : playerRef.current.pause();
+      if (mp4Url) {
+        playerRef.current.currentTime = time;
+        if (isPlaying) playerRef.current.play();
+        else playerRef.current.pause();
+      } else {
+        const provider = await playerRef.current.getProvider();
+        await provider.setCurrentTime(time);
+        isPlaying ? playerRef.current.play() : playerRef.current.pause();
+      }
     };
   
     const handlePlay = async ({ time }) => {
       console.log("[SYNC] Play sync received at", time);
       if (!playerRef.current) return;
       ignoreRef.current = true;
-      const provider = await playerRef.current.getProvider();
-      await provider.setCurrentTime(time);
-      await playerRef.current.play();
+      if (mp4Url) {
+        playerRef.current.currentTime = time;
+        playerRef.current.play();
+      } else {
+        const provider = await playerRef.current.getProvider();
+        await provider.setCurrentTime(time);
+        await playerRef.current.play();
+      }
     };
   
     const handlePause = async ({ time }) => {
       console.log("[SYNC] Pause sync received at", time);
       if (!playerRef.current) return;
       ignoreRef.current = true;
-      const provider = await playerRef.current.getProvider();
-      await provider.setCurrentTime(time);
-      await playerRef.current.pause();
+      if (mp4Url) {
+        playerRef.current.currentTime = time;
+        playerRef.current.pause();
+      } else {
+        const provider = await playerRef.current.getProvider();
+        await provider.setCurrentTime(time);
+        await playerRef.current.pause();
+      }
     };
   
     const handleSeek = async ({ time }) => {
       console.log("[SYNC] Seek sync received at", time);
       if (!playerRef.current) return;
       ignoreRef.current = true;
-      const provider = await playerRef.current.getProvider();
-      await provider.setCurrentTime(time);
+      if (mp4Url) {
+        playerRef.current.currentTime = time;
+      } else {
+        const provider = await playerRef.current.getProvider();
+        await provider.setCurrentTime(time);
+      }
     };
   
     socket.on("initial-sync", handleInitialSync);
@@ -123,13 +149,13 @@ const SessionRoomPage = () => {
       socket.off("sync-pause", handlePause);
       socket.off("sync-seek", handleSeek);
     };
-  }, [roomCode]);
+  }, [roomCode, mp4Url]);
   
 
   // ✅ Attach player events for emitting sync
 
   useEffect(() => {
-    if (!playerRef.current || !youtubeId) return;
+    if (!playerRef.current || (!youtubeId && !mp4Url)) return;
     const videoEl = playerRef.current;
 
     const onPlay = async () => {
@@ -137,7 +163,12 @@ const SessionRoomPage = () => {
         ignoreRef.current = false;
         return;
       }
-      const time = await videoEl.getCurrentTime();
+      let time;
+      if (mp4Url) {
+        time = videoEl.currentTime;
+      } else {
+        time = await videoEl.getCurrentTime();
+      }
       socket.emit("play-video", { roomId: roomCode, time });
     };
 
@@ -146,7 +177,12 @@ const SessionRoomPage = () => {
         ignoreRef.current = false;
         return;
       }
-      const time = await videoEl.getCurrentTime();
+      let time;
+      if (mp4Url) {
+        time = videoEl.currentTime;
+      } else {
+        time = await videoEl.getCurrentTime();
+      }
       socket.emit("pause-video", { roomId: roomCode, time });
     };
 
@@ -155,20 +191,37 @@ const SessionRoomPage = () => {
         ignoreRef.current = false;
         return;
       }
-      const time = await videoEl.getCurrentTime();
+      let time;
+      if (mp4Url) {
+        time = videoEl.currentTime;
+      } else {
+        time = await videoEl.getCurrentTime();
+      }
       socket.emit("seek-video", { roomId: roomCode, time });
     };
 
-    videoEl.addEventListener("play", onPlay);
-    videoEl.addEventListener("pause", onPause);
-    videoEl.addEventListener("seeked", onSeeked);
+    if (mp4Url) {
+      videoEl.addEventListener("play", onPlay);
+      videoEl.addEventListener("pause", onPause);
+      videoEl.addEventListener("seeked", onSeeked);
+    } else {
+      videoEl.addEventListener("play", onPlay);
+      videoEl.addEventListener("pause", onPause);
+      videoEl.addEventListener("seeked", onSeeked);
+    }
 
     return () => {
-      videoEl.removeEventListener("play", onPlay);
-      videoEl.removeEventListener("pause", onPause);
-      videoEl.removeEventListener("seeked", onSeeked);
+      if (mp4Url) {
+        videoEl.removeEventListener("play", onPlay);
+        videoEl.removeEventListener("pause", onPause);
+        videoEl.removeEventListener("seeked", onSeeked);
+      } else {
+        videoEl.removeEventListener("play", onPlay);
+        videoEl.removeEventListener("pause", onPause);
+        videoEl.removeEventListener("seeked", onSeeked);
+      }
     };
-  }, [youtubeId, roomCode]);
+  }, [youtubeId, mp4Url, roomCode]);
 
   
   const [user, setUser] = useState(null);
@@ -250,23 +303,31 @@ const SessionRoomPage = () => {
           </div>
         </div>
 
-        {!session || !youtubeId ? (
+        {!session || (!youtubeId && !mp4Url) ? (
           <p>Loading...</p>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Video */}
             <div className="lg:col-span-2 h-[500px]">
-              <Player
-                ref={playerRef}
-                controls
-                theme="dark"
-                className="w-full h-full rounded-xl overflow-hidden shadow-lg border border-gray-700"
-              >
-                <Youtube videoId={youtubeId} />
-                <DefaultUi />
-              </Player>
+              {mp4Url ? (
+                <video
+                  ref={playerRef}
+                  src={mp4Url}
+                  controls
+                  className="w-full h-full rounded-xl overflow-hidden shadow-lg border border-gray-700 bg-black"
+                />
+              ) : (
+                <Player
+                  ref={playerRef}
+                  controls
+                  theme="dark"
+                  className="w-full h-full rounded-xl overflow-hidden shadow-lg border border-gray-700"
+                >
+                  <Youtube videoId={youtubeId} />
+                  <DefaultUi />
+                </Player>
+              )}
             </div>
-
             {/* Chat */}
             <ChatBox roomCode={roomCode} socket={socket} userName={user?.name} />
           </div>

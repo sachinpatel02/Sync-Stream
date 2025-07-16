@@ -50,6 +50,10 @@ app.use("/api/sessions/", sessionRoutes);
 const tmdbRoutes = require("../server/routes/tmdbRoutes.js");
 app.use("/api/tmdb", tmdbRoutes);
 
+//5. Pexels routes for admin only
+const pexelsRoutes = require("../server/routes/pexelsRoutes.js");
+app.use("/api/pexels", pexelsRoutes);
+
 /****************************************************************************************** */
 
 //```SERVER LISTENING AT PORT 3000```

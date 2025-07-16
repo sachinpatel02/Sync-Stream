@@ -8,6 +8,7 @@ import "@vime/core/themes/default.css";
 const WatchVideoPage = () => {
   const { videoId } = useParams();
   const [youtubeId, setYoutubeId] = useState("");
+  const [mp4Url, setMp4Url] = useState("");
   const [videoDetails, setVideoDetails] = useState(null);
 
   const extractYouTubeId = (url) => {
@@ -26,12 +27,18 @@ const WatchVideoPage = () => {
 
         const data = await res.json();
         if (res.ok) {
-          const ytId = extractYouTubeId(data.data?.videoUrl);
-          if (ytId) {
-            setYoutubeId(ytId);
+          const url = data.data?.videoUrl;
+          if (url && url.endsWith(".mp4")) {
+            setMp4Url(url);
             setVideoDetails(data.data);
           } else {
-            toast.error("Invalid YouTube URL");
+            const ytId = extractYouTubeId(url);
+            if (ytId) {
+              setYoutubeId(ytId);
+              setVideoDetails(data.data);
+            } else {
+              toast.error("Invalid video URL");
+            }
           }
         } else {
           toast.error(data.message || "Failed to fetch video");
@@ -49,7 +56,31 @@ const WatchVideoPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-[#196254] text-white">
       <Header />
       <div className="p-6 max-w-5xl mx-auto">
-        {youtubeId ? (
+        {mp4Url ? (
+          <>
+            <div className="aspect-video w-full rounded-lg overflow-hidden shadow-lg mb-6 bg-black flex items-center justify-center">
+              <video src={mp4Url} controls className="w-full h-full" />
+            </div>
+            {videoDetails && (
+              <>
+                <h2 className="text-2xl font-bold mb-2">{videoDetails.title}</h2>
+                <p className="text-gray-300 mb-4">{videoDetails.description}</p>
+                {videoDetails.tags?.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {videoDetails.tags.map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="bg-gray-800 text-white px-3 py-1 text-sm rounded-full"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        ) : youtubeId ? (
           <>
             <div className="aspect-video w-full rounded-lg overflow-hidden shadow-lg mb-6">
               <Player controls theme="dark" className="w-full h-full">
@@ -57,12 +88,10 @@ const WatchVideoPage = () => {
                 <DefaultUi />
               </Player>
             </div>
-
             {videoDetails && (
               <>
                 <h2 className="text-2xl font-bold mb-2">{videoDetails.title}</h2>
                 <p className="text-gray-300 mb-4">{videoDetails.description}</p>
-
                 {videoDetails.tags?.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {videoDetails.tags.map((tag, idx) => (
