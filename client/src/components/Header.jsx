@@ -16,7 +16,7 @@ const Header = () => {
                     <div 
                         className="flex items-center space-x-3"
                     >
-                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-['Sora'] tracking-tight">
                             SyncStream
                         </span>
                     </div>
