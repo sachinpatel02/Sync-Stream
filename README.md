@@ -1,4 +1,14 @@
-# 🎬 SyncStream – Real-Time Collaborative Video Streaming App
+# 🎬 S### 🚀 Features
+
+### 💫 UI/UX Features
+- Modern, responsive design with **TailwindCSS**
+- Smooth page transitions with **Framer Motion**
+- Dark/Light theme support
+- Real-time notifications with **React Hot Toast**
+- Intuitive video player controls
+- Mobile-friendly interface
+
+### 👥 User FeaturesStream – Real-Time Collaborative Video Streaming App
 
 SyncStream is a full-stack web application that allows users to watch videos together in real time, create or join sessions (rooms), and chat during playback. It offers admin-controlled video management, session syncing via WebSockets, and real-time interaction – similar to platforms like Teleparty or Netflix Party.
 
@@ -28,18 +38,28 @@ SyncStream is a full-stack web application that allows users to watch videos tog
 ## 🧠 Tech Stack
 
 ### Backend
-- **Node.js**, **Express.js**
-- **MongoDB (Mongoose)** for data storage
-- **Socket.IO** for real-time communication
-- **JWT** + **cookie-parser** for authentication
+- **Node.js** & **Express.js** for robust server architecture
+- **MongoDB** with **Mongoose ODM** for scalable data management
+- **Socket.IO** for real-time bidirectional communication
+- **JWT** with **cookie-parser** for secure authentication
+- **CORS** for secure cross-origin resource sharing
+- **bcrypt** for password hashing
+- **express-validator** for request validation
 - **TMDB API** integration for movie metadata
-- **Postman** for backend testing
+- **dotenv** for environment configuration
+- **nodemon** for development workflow
+- **Postman** for API testing and documentation
 
 ### Frontend
-- **React** + **Vite**
-- **TailwindCSS** for UI
-- **React Router**, **Toasts**, and custom components
-- **YouTube Player API** for embedded video playback
+- **React** + **Vite** for fast development and optimized builds
+- **TailwindCSS** for modern, responsive UI design
+- **React Router v6** for client-side routing
+- **React Hot Toast** for user notifications
+- **Framer Motion** for smooth animations
+- **Socket.IO Client** for real-time communication
+- **React Icons** for consistent iconography
+- Custom dark mode implementation with context
+- Responsive design for all screen sizes
 
 ---
 
@@ -47,18 +67,57 @@ SyncStream is a full-stack web application that allows users to watch videos tog
 
 ```
 /server
-  ├── config/            # DB connection
-  ├── controllers/       # Logic for users, videos, sessions
-  ├── middleware/        # authMiddleware, error handling
-  ├── models/            # Mongoose schemas
-  ├── routes/            # REST API routes
-  ├── socket/            # socketHandler.js for syncing sessions
-  └── utils/             # sendResponse.js, helpers
+  ├── config/            # Configuration files
+  │   ├── db.js         # MongoDB connection setup
+  │   └── cors.js       # CORS configuration
+  ├── controllers/       # Request handlers
+  │   ├── userController.js    # User management logic
+  │   ├── videoController.js   # Video management
+  │   ├── sessionController.js # Session handling
+  │   ├── tmdbController.js    # TMDB API integration
+  │   └── pexelsController.js  # Pexels API handling
+  ├── middleware/       # Custom middleware
+  │   ├── authMiddleware.js    # JWT authentication
+  │   ├── validateRequest.js   # Request validation
+  │   └── errorHandler.js      # Global error handling
+  ├── models/          # Database schemas
+  │   ├── User.js      # User model with password hashing
+  │   ├── Video.js     # Video content schema
+  │   └── Session.js   # Viewing session schema
+  ├── routes/          # API route definitions
+  │   ├── userRoutes.js     # Auth & user management
+  │   ├── videoRoutes.js    # Video CRUD operations
+  │   ├── sessionRoutes.js  # Session management
+  │   └── tmdbRoutes.js     # TMDB API endpoints
+  ├── socket/          # WebSocket handling
+  │   └── socketHandler.js  # Real-time sync logic
+  ├── utils/           # Helper functions
+  │   ├── sendResponse.js   # Response formatter
+  │   └── validators.js     # Input validation rules
+  └── server.js        # Main application entry
 
 /client
-  ├── components/        # Header, Sidebar, etc.
-  ├── pages/             # HomePage, Login, WatchVideo, CreateSession, etc.
-  ├── App.jsx, main.jsx  # Routing and entry point
+  ├── src/
+  │   ├── components/    # Reusable UI components
+  │   │   ├── Header.jsx          # Main navigation header
+  │   │   ├── ChatBox.jsx         # Real-time chat component
+  │   │   ├── ProfileSidebar.jsx  # User profile sidebar
+  │   │   └── ThemeToggle.jsx     # Dark/light mode toggle
+  │   ├── pages/         # Page components
+  │   │   ├── LandingPage.jsx     # Public landing page
+  │   │   ├── LoginPage.jsx       # User authentication
+  │   │   ├── HomePage.jsx        # Dashboard
+  │   │   ├── SessionRoomPage.jsx # Video sync room
+  │   │   └── CreateSessionPage.jsx # Session creation
+  │   ├── context/       # React Context providers
+  │   │   └── ThemeContext.jsx    # Theme management
+  │   ├── utils/         # Helper functions
+  │   │   └── socket.js           # Socket.IO setup
+  │   ├── assets/        # Images and static files
+  │   ├── App.jsx        # Main component & routing
+  │   └── main.jsx       # Entry point
+  ├── index.html         # HTML template
+  └── vite.config.js     # Vite configuration
 ```
 
 ---
@@ -72,21 +131,69 @@ SyncStream is a full-stack web application that allows users to watch videos tog
 
 ### 🛠️ Backend Setup
 
+1. Navigate to the server directory:
 ```bash
 cd server
-npm install
-touch .env
-# Add your DB_URI, JWT_SECRET, TMDB_API_KEY
-npm run dev
 ```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Create a `.env` file with the following configuration:
+```bash
+# Database
+MONGODB_URI=your_mongodb_connection_string
+
+# Authentication
+JWT_SECRET=your_jwt_secret_key
+JWT_EXPIRE=24h
+COOKIE_EXPIRE=24
+
+# External APIs
+TMDB_API_KEY=your_tmdb_api_key
+
+# Server
+PORT=3000
+NODE_ENV=development
+```
+
+4. Start the development server:
+```bash
+# With nodemon (recommended for development)
+npm run dev
+
+# Without nodemon
+npm start
+```
+
+The backend server will be available at `http://localhost:3000`
 
 ### 💻 Frontend Setup
 
+1. Navigate to the client directory:
 ```bash
 cd client
+```
+
+2. Install dependencies:
+```bash
 npm install
+```
+
+3. Create a `.env` file with necessary configuration:
+```bash
+VITE_API_URL=http://localhost:3000
+VITE_SOCKET_URL=http://localhost:3000
+```
+
+4. Start the development server:
+```bash
 npm run dev
 ```
+
+The frontend will be available at `http://localhost:5173` (or next available port)
 
 > Make sure backend runs on `localhost:3000` and frontend on `localhost:3001` (adjust CORS settings if needed).
 
