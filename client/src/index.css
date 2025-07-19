@@ -1,4 +1,123 @@
 @import "tailwindcss";
-*{
+
+* {
   box-sizing: border-box;
+}
+
+/* Theme Variables */
+:root {
+  --transition-duration: 0.3s;
+  --border-radius: 12px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 20px;
+}
+
+/* Smooth transitions for theme switching */
+* {
+  transition: background-color var(--transition-duration) ease, 
+              border-color var(--transition-duration) ease,
+              color var(--transition-duration) ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(156 163 175);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(107 114 128);
+}
+
+/* Dark theme scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgb(75 85 99);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgb(107 114 128);
+}
+
+/* Glass morphism effect */
+.glass {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Gradient backgrounds */
+.gradient-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-bg-dark {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+/* Modern card styles */
+.modern-card {
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Button styles */
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900;
+}
+
+.btn-ghost {
+  @apply bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900;
+}
+
+/* Input styles */
+.input-modern {
+  @apply bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-all duration-200;
+}
+
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading spinner */
+.spinner {
+  @apply animate-spin rounded-full border-2 border-gray-300 border-t-blue-600;
 }

@@ -1,6 +1,6 @@
 module.exports = (io) => {
-  const roomStates = {};      // roomId → { time, isPlaying }
-  const roomHosts = {};       // roomId → socket.id
+  const roomStates = new Map();      // roomId → { time, isPlaying }
+  const roomHosts = new Map();       // roomId → socket.id
 
   io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);
@@ -16,8 +16,9 @@ module.exports = (io) => {
         console.log(`${socket.id} joined room ${roomId}`);
 
         // First user becomes host
-        if (!roomHosts[roomId]) {
-          roomHosts[roomId] = socket.id;
+        if (!roomHosts.has(roomId)) {
+          roomHosts.set(roomId, socket.id);
+          roomStates.set(roomId, { time: 0, isPlaying: false });
           console.log(`Host set for room ${roomId}: ${socket.id}`);
         }
       }
@@ -25,32 +26,42 @@ module.exports = (io) => {
 
     // Sync request
     socket.on("request-sync", (roomId) => {
-      const state = roomStates[roomId] || { time: 0, isPlaying: false };
-      socket.emit("initial-sync", state);
-      console.log(`Sent initial sync state to ${socket.id} for room ${roomId}:`, state);
+      const state = roomStates.get(roomId) || { time: 0, isPlaying: false };
+      io.in(roomId).emit("video-sync", state);
+    });
+
+    // Regular sync update from host
+    socket.on("sync-status", ({ roomId, time, isPlaying }) => {
+      if (socket.id !== roomHosts.get(roomId)) return;
+      const state = { time, isPlaying };
+      roomStates.set(roomId, state);
+      io.in(roomId).emit("video-sync", state);
     });
 
     // Play (Only Host)
     socket.on("play-video", ({ roomId, time }) => {
-      if (socket.id !== roomHosts[roomId]) return;
-      roomStates[roomId] = { time, isPlaying: true };
-      socket.to(roomId).emit("sync-play", { time });
+      if (socket.id !== roomHosts.get(roomId)) return;
+      const state = { time, isPlaying: true };
+      roomStates.set(roomId, state);
+      io.in(roomId).emit("video-sync", state);
     });
 
     // Pause (Only Host)
     socket.on("pause-video", ({ roomId, time }) => {
-      if (socket.id !== roomHosts[roomId]) return;
-      roomStates[roomId] = { time, isPlaying: false };
-      socket.to(roomId).emit("sync-pause", { time });
+      if (socket.id !== roomHosts.get(roomId)) return;
+      const state = { time, isPlaying: false };
+      roomStates.set(roomId, state);
+      io.in(roomId).emit("video-sync", state);
     });
 
     // Seek (Only Host)
     socket.on("seek-video", ({ roomId, time }) => {
-      if (socket.id !== roomHosts[roomId]) return;
-      roomStates[roomId] = { ...roomStates[roomId], time };
-      socket.to(roomId).emit("sync-seek", { time });
+      if (socket.id !== roomHosts.get(roomId)) return;
+      const currentState = roomStates.get(roomId) || { time: 0, isPlaying: false };
+      const state = { ...currentState, time };
+      roomStates.set(roomId, state);
+      io.in(roomId).emit("video-sync", state);
     });
-
     // Chat
     socket.on("chat-message", ({ roomId, message }) => {
       if (!roomId || !message?.text) return;
@@ -68,9 +79,10 @@ module.exports = (io) => {
 
       // If host disconnects, remove host assignment
       for (const roomId of socket.joinedRooms) {
-        if (roomHosts[roomId] === socket.id) {
+        if (roomHosts.get(roomId) === socket.id) {
           console.log(`Host ${socket.id} left room ${roomId}`);
-          delete roomHosts[roomId];
+          roomHosts.delete(roomId);
+          roomStates.delete(roomId);
         }
       }
     });
