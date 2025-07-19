@@ -1,4 +1,6 @@
-# 🎬 S### 🚀 Features
+# 🎬 Sync Stream: A collaborative Video Streaming App
+
+## 📄 Overview
 
 ### 💫 UI/UX Features
 - Modern, responsive design with **TailwindCSS**
